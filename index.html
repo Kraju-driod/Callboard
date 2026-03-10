@@ -1,0 +1,1375 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Call Performance · Leaderboard</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Instrument+Serif:ital@0;1&family=Syne:wght@400;500;600;700&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --white:#ffffff;--off-white:#f7f7f5;--canvas:#f2f1ee;--border:#e2e0da;--border-dk:#ccc9c0;
+  --ink:#1a1916;--ink-2:#3d3b35;--ink-3:#7a7870;
+  --accent:#1a5cff;--accent-light:#eef1ff;
+  --green:#0d6e4a;--green-bg:#eaf4ef;
+  --amber:#92570a;--amber-bg:#fdf4e7;
+  --red:#c0392b;--red-bg:#fdf0ee;
+  --blue:#1a5cff;--blue-bg:#eef1ff;
+  --purple:#5b21b6;--purple-bg:#ede9fe;
+  --gold:#b8860b;--gold-bg:#fdf8ec;
+  --sh-sm:0 1px 3px rgba(26,25,22,.07),0 1px 2px rgba(26,25,22,.04);
+  --sh-md:0 4px 12px rgba(26,25,22,.08),0 2px 4px rgba(26,25,22,.04);
+  --sh-lg:0 16px 40px rgba(26,25,22,.12),0 4px 12px rgba(26,25,22,.06);
+}
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html{font-size:15px}
+body{background:var(--canvas);color:var(--ink);font-family:'Syne',sans-serif;min-height:100vh;-webkit-font-smoothing:antialiased}
+
+/* HEADER */
+.hdr{background:var(--white);border-bottom:1px solid var(--border);padding:0 40px;height:60px;display:flex;align-items:center;justify-content:space-between;position:sticky;top:0;z-index:50}
+.hdr-l{display:flex;align-items:center;gap:28px}
+.wordmark{font-family:'Instrument Serif',serif;font-size:19px;letter-spacing:-.01em;white-space:nowrap}
+.wordmark em{font-style:italic;color:var(--accent)}
+.hdiv{width:1px;height:18px;background:var(--border)}
+.hdr-meta{font-size:12px;color:var(--ink-3);letter-spacing:.04em;text-transform:uppercase}
+.hdr-r{display:flex;align-items:center;gap:10px}
+.live-pill{display:flex;align-items:center;gap:5px;font-size:11px;font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--green);background:var(--green-bg);border:1px solid #b6dece;border-radius:20px;padding:4px 11px}
+.live-dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s ease-in-out infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+.btn{font-family:'Syne',sans-serif;font-size:13px;font-weight:500;cursor:pointer;border-radius:6px;transition:all .15s;white-space:nowrap}
+.btn-ghost{background:transparent;border:1px solid var(--border);color:var(--ink-2);padding:6px 14px}
+.btn-ghost:hover{border-color:var(--border-dk);background:var(--off-white)}
+.btn-primary{background:var(--accent);border:1px solid var(--accent);color:#fff;padding:6px 16px}
+.btn-primary:hover{background:#1450e0}
+.btn-primary:disabled{opacity:.4;cursor:not-allowed}
+
+/* PAGE */
+.page{display:grid;grid-template-columns:1fr 380px;min-height:calc(100vh - 60px)}
+.page.hidden{display:none}
+.main-col{padding:32px 40px;border-right:1px solid var(--border)}
+.side-col{padding:24px;background:var(--white);display:flex;flex-direction:column;gap:0}
+
+/* NAV TABS */
+.nav-tabs{display:flex;gap:2px;background:var(--off-white);border:1px solid var(--border);border-radius:7px;padding:3px}
+.nav-tab{font-size:12px;font-weight:600;padding:5px 14px;border-radius:5px;cursor:pointer;border:none;background:transparent;color:var(--ink-3);transition:all .15s;letter-spacing:.03em}
+.nav-tab:hover{color:var(--ink)}
+.nav-tab.active{background:var(--white);color:var(--ink);box-shadow:var(--sh-sm)}
+
+/* WAR ROOM PAGE */
+.wr-page{display:none;padding:28px 40px;min-height:calc(100vh - 60px)}
+.wr-page.visible{display:block}
+.wr-kpi-row{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-bottom:20px}
+.wr-kpi{background:var(--white);border:1px solid var(--border);border-radius:8px;padding:14px 16px;box-shadow:var(--sh-sm)}
+.wr-kpi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:4px}
+.wr-kpi-val{font-family:'Instrument Serif',serif;font-size:28px;line-height:1;letter-spacing:-.02em}
+.wr-grid{display:grid;grid-template-columns:1fr 1fr;gap:20px;margin-bottom:20px}
+.wr-full{grid-column:1/-1}
+.wr-card{background:var(--white);border:1px solid var(--border);border-radius:10px;box-shadow:var(--sh-sm);overflow:hidden}
+.wr-card-hdr{padding:12px 18px;border-bottom:1px solid var(--border);display:flex;align-items:center;justify-content:space-between}
+.wr-card-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);display:flex;align-items:center;gap:6px}
+.wr-card-body{padding:16px 18px}
+.wr-pulse{width:7px;height:7px;border-radius:50%;background:var(--green);animation:blink 1.5s ease-in-out infinite;flex-shrink:0}
+/* LIVE CALLS */
+.live-call-list{display:flex;flex-direction:column;gap:8px}
+.live-call{display:flex;align-items:center;gap:12px;padding:10px 14px;background:var(--off-white);border:1px solid var(--border);border-radius:8px;animation:fadeUp .3s ease both}
+.live-call.ringing{border-color:#f59e0b;background:#fffbeb}
+.lc-avatar{width:36px;height:36px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid var(--border)}
+.lc-info{flex:1;min-width:0}
+.lc-agent{font-size:13px;font-weight:600;color:var(--ink)}
+.lc-caller{font-size:11px;color:var(--ink-3);margin-top:1px}
+.lc-number{font-size:10px;color:var(--accent);margin-top:2px}
+.lc-right{text-align:right;flex-shrink:0}
+.lc-timer{font-family:'IBM Plex Mono',monospace;font-size:13px;font-weight:600;color:var(--green)}
+.lc-timer.ringing{color:#f59e0b}
+.lc-listen{margin-top:4px;font-size:10px;font-weight:600;color:var(--accent);text-decoration:none;display:inline-flex;align-items:center;gap:3px}
+.lc-listen:hover{text-decoration:underline}
+.lc-dir{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;padding:2px 6px;border-radius:3px;margin-top:3px;display:inline-block}
+.lc-dir.in{background:#dcfce7;color:#15803d}
+.lc-dir.out{background:#dbeafe;color:#1d4ed8}
+/* AGENT GRID */
+.agent-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(130px,1fr));gap:8px}
+.agent-tile{border:1px solid var(--border);border-radius:8px;padding:10px 12px;text-align:center;transition:all .2s}
+.agent-tile.in-call{border-color:var(--green);background:var(--green-bg)}
+.agent-tile.ringing{border-color:#f59e0b;background:#fffbeb;animation:pulse-border 1s ease-in-out infinite}
+@keyframes pulse-border{0%,100%{box-shadow:0 0 0 0 rgba(245,158,11,.3)}50%{box-shadow:0 0 0 4px rgba(245,158,11,.1)}}
+.at-avatar{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700;margin:0 auto 6px;border:2px solid var(--border)}
+.at-name{font-size:11px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.at-status{font-size:9px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;margin-top:3px}
+.at-status.in-call{color:var(--green)}
+.at-status.ringing{color:#f59e0b}
+.at-duration{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--green);margin-top:2px}
+/* FEED */
+.feed-list{display:flex;flex-direction:column;gap:6px;max-height:320px;overflow-y:auto}
+.feed-item{display:flex;align-items:center;gap:10px;padding:8px 10px;border-radius:6px;background:var(--off-white);border:1px solid var(--border);animation:slideIn .4s ease both}
+@keyframes slideIn{from{opacity:0;transform:translateX(12px)}to{opacity:1;transform:translateX(0)}}
+.feed-time{font-family:'IBM Plex Mono',monospace;font-size:10px;color:var(--ink-3);flex-shrink:0;width:40px}
+.feed-agent{font-size:12px;font-weight:600;color:var(--ink);min-width:80px}
+.feed-caller{font-size:11px;color:var(--ink-3);flex:1;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* KPI ROW */
+.kpi-row{display:grid;grid-template-columns:repeat(5,1fr);gap:1px;background:var(--border);border:1px solid var(--border);border-radius:10px;overflow:hidden;margin-bottom:32px;box-shadow:var(--sh-sm)}
+.kpi{background:var(--white);padding:18px 20px;animation:fadeUp .4s ease both}
+@keyframes fadeUp{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.kpi-label{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:6px}
+.kpi-val{font-family:'Instrument Serif',serif;font-size:30px;line-height:1;letter-spacing:-.02em;margin-bottom:3px}
+.kpi-val.blue{color:var(--accent)}.kpi-val.grn{color:var(--green)}.kpi-val.amber{color:var(--amber)}.kpi-val.red{color:var(--red)}
+.kpi-sub{font-size:11px;color:var(--ink-3)}
+
+/* SECTION */
+.sec-hdr{display:flex;align-items:baseline;justify-content:space-between;margin-bottom:14px}
+.sec-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3)}
+.sec-note{font-size:11px;color:var(--ink-3)}
+
+/* LEADERBOARD */
+.lb-wrap{background:var(--white);border:1px solid var(--border);border-radius:10px;overflow:hidden;box-shadow:var(--sh-sm)}
+.lb-head{display:grid;grid-template-columns:44px 1fr 80px 70px 70px 70px 90px 70px;padding:10px 20px;background:var(--off-white);border-bottom:1px solid var(--border);font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);align-items:center;gap:4px}
+.lb-row{display:grid;grid-template-columns:44px 1fr 80px 70px 70px 70px 90px 70px;padding:12px 20px;border-bottom:1px solid var(--border);align-items:center;cursor:pointer;transition:background .12s;animation:fadeUp .35s ease both;gap:4px}
+.lb-row:last-child{border-bottom:none}
+.lb-row:hover{background:var(--off-white)}
+.lb-row.r1{background:var(--gold-bg)}.lb-row.r1:hover{background:#fdf3da}
+.rank-badge{width:28px;height:28px;border-radius:6px;display:flex;align-items:center;justify-content:center;font-size:12px;font-weight:700}
+.r1 .rank-badge{background:#f5e6b2;color:var(--gold);font-size:15px}
+.r2 .rank-badge{background:#ebebeb;color:#6b6b6b}
+.r3 .rank-badge{background:#f0e8e0;color:#9a6038}
+.lb-row:not(.r1):not(.r2):not(.r3) .rank-badge{background:var(--off-white);color:var(--ink-3);font-family:'IBM Plex Mono',monospace;font-size:11px}
+.agent-cell{display:flex;align-items:center;gap:10px;min-width:0}
+.avatar{width:32px;height:32px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-size:11px;font-weight:700;flex-shrink:0;border:2px solid var(--border)}
+.agent-name{font-size:13px;font-weight:600;color:var(--ink);white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.agent-team{font-size:10px;color:var(--ink-3);margin-top:1px}
+.cell-mono{font-family:'IBM Plex Mono',monospace;font-size:12px;font-weight:500;color:var(--ink-2);text-align:right}
+.meet-val{font-family:'Instrument Serif',serif;font-size:20px;color:var(--accent);text-align:right}
+.badge{display:inline-flex;align-items:center;font-size:10px;font-weight:600;padding:2px 7px;border-radius:4px;letter-spacing:.02em;white-space:nowrap}
+.b-green{background:var(--green-bg);color:var(--green)}
+.b-amber{background:var(--amber-bg);color:var(--amber)}
+.b-red{background:var(--red-bg);color:var(--red)}
+.b-blue{background:var(--blue-bg);color:var(--blue)}
+.b-purple{background:var(--purple-bg);color:var(--purple)}
+.b-gray{background:var(--off-white);color:var(--ink-3);border:1px solid var(--border)}
+.bar-wrap{width:100%}
+.bar-lbl{font-size:10px;color:var(--ink-3);margin-bottom:3px;font-family:'IBM Plex Mono',monospace}
+.bar-bg{background:var(--canvas);border-radius:2px;height:4px;overflow:hidden}
+.bar-fill{height:100%;border-radius:2px;background:var(--accent);transition:width .6s ease}
+
+/* SIDE */
+.side-title{font-size:11px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:14px;display:flex;justify-content:space-between;align-items:center}
+.filter-tag{background:var(--accent-light);color:var(--accent);font-size:10px;font-weight:600;padding:2px 8px;border-radius:3px;cursor:pointer}
+.filter-tag:hover{background:#dde5ff}
+.call-list{display:flex;flex-direction:column;gap:8px;overflow-y:auto;flex:1}
+.call-card{border:1px solid var(--border);border-radius:8px;padding:12px 14px;cursor:pointer;transition:all .12s;background:var(--white);animation:fadeUp .3s ease both;flex-shrink:0}
+.call-card:hover{border-color:var(--accent);box-shadow:var(--sh-sm)}
+.call-card-top{display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:5px}
+.caller{font-size:13px;font-weight:600;color:var(--ink)}
+.call-time{font-size:10px;color:var(--ink-3);font-family:'IBM Plex Mono',monospace;white-space:nowrap}
+.call-agent-line{font-size:11px;color:var(--ink-3);margin-bottom:6px}
+.call-footer{display:flex;gap:5px;align-items:center;flex-wrap:wrap}
+
+/* OUTCOME LEGEND */
+.outcome-legend{background:var(--off-white);border:1px solid var(--border);border-radius:8px;padding:12px 14px;margin-bottom:16px;font-size:11px}
+.legend-title{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px}
+.legend-items{display:flex;flex-direction:column;gap:4px}
+.legend-row{display:flex;align-items:center;justify-content:space-between}
+.legend-label{display:flex;align-items:center;gap:6px;color:var(--ink-2)}
+.legend-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0}
+.legend-count{font-family:'IBM Plex Mono',monospace;font-weight:500;color:var(--ink-3)}
+
+/* MODAL */
+.overlay{position:fixed;inset:0;background:rgba(26,25,22,.45);backdrop-filter:blur(3px);z-index:200;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s}
+.overlay.open{opacity:1;pointer-events:all}
+.modal{background:var(--white);border:1px solid var(--border);border-radius:12px;width:100%;max-width:680px;max-height:88vh;overflow-y:auto;box-shadow:var(--sh-lg);transform:translateY(12px) scale(.98);transition:transform .18s}
+.overlay.open .modal{transform:translateY(0) scale(1)}
+.modal-hdr{padding:20px 24px 16px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:flex-start;position:sticky;top:0;background:var(--white);z-index:1}
+.modal-caller{font-family:'Instrument Serif',serif;font-size:22px;color:var(--ink)}
+.modal-sub{font-size:12px;color:var(--ink-3);margin-top:2px}
+.close-btn{background:var(--off-white);border:1px solid var(--border);color:var(--ink-3);width:30px;height:30px;border-radius:6px;cursor:pointer;font-size:16px;display:flex;align-items:center;justify-content:center;transition:all .12s;flex-shrink:0}
+.close-btn:hover{border-color:var(--border-dk);color:var(--ink)}
+.modal-body{padding:20px 24px 24px}
+.meta-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:22px}
+.meta-box{background:var(--off-white);border:1px solid var(--border);border-radius:7px;padding:11px 13px}
+.meta-lbl{font-size:10px;font-weight:700;letter-spacing:.08em;text-transform:uppercase;color:var(--ink-3);margin-bottom:3px}
+.meta-val{font-size:13px;font-weight:600;color:var(--ink)}
+.dsec{margin-bottom:18px}
+.dsec-title{font-size:10px;font-weight:700;letter-spacing:.1em;text-transform:uppercase;color:var(--ink-3);margin-bottom:8px;padding-bottom:6px;border-bottom:1px solid var(--border)}
+.summary-box{font-size:14px;line-height:1.75;color:var(--ink-2);background:var(--off-white);border-radius:7px;padding:14px 16px;border:1px solid var(--border)}
+.tx-wrap{background:var(--canvas);border:1px solid var(--border);border-radius:7px;padding:14px 16px;max-height:280px;overflow-y:auto;font-family:'IBM Plex Mono',monospace;font-size:12px;line-height:1.85}
+.t-line{display:flex;gap:10px;margin-bottom:8px}
+.t-sp{font-weight:500;white-space:nowrap;min-width:80px}
+.t-ag{color:var(--accent)}.t-cu{color:#6b3fa0}.t-tx{color:var(--ink-2)}
+.tx-loading{color:var(--ink-3);font-size:12px;padding:8px 0}
+
+/* RAW DEBUG */
+.debug-box{background:#1a1916;border-radius:7px;padding:14px 16px;max-height:200px;overflow-y:auto;font-family:'IBM Plex Mono',monospace;font-size:11px;line-height:1.7;color:#94a3b8;margin-top:8px}
+
+/* CONFIG */
+.cfg-ov{position:fixed;inset:0;background:rgba(26,25,22,.5);backdrop-filter:blur(4px);z-index:300;display:flex;align-items:center;justify-content:center;padding:24px;opacity:0;pointer-events:none;transition:opacity .18s}
+.cfg-ov.open{opacity:1;pointer-events:all}
+.cfg-modal{background:var(--white);border:1px solid var(--border);border-radius:12px;width:100%;max-width:500px;box-shadow:var(--sh-lg);transform:translateY(10px);transition:transform .18s}
+.cfg-ov.open .cfg-modal{transform:translateY(0)}
+.cfg-hdr{padding:20px 24px 14px;border-bottom:1px solid var(--border);display:flex;justify-content:space-between;align-items:center}
+.cfg-title{font-family:'Instrument Serif',serif;font-size:20px}
+.cfg-body{padding:20px 24px}
+.cfg-desc{font-size:13px;color:var(--ink-3);line-height:1.6;margin-bottom:18px}
+.field{margin-bottom:14px}
+.flbl{display:block;font-size:11px;font-weight:700;letter-spacing:.07em;text-transform:uppercase;color:var(--ink-2);margin-bottom:5px}
+.finput{width:100%;background:var(--off-white);border:1px solid var(--border);border-radius:6px;padding:9px 12px;font-family:'IBM Plex Mono',monospace;font-size:13px;color:var(--ink);outline:none;transition:border-color .15s}
+.finput:focus{border-color:var(--accent);background:var(--white)}
+.finput::placeholder{color:var(--ink-3)}
+.fhint{font-size:11px;color:var(--ink-3);margin-top:4px}
+
+/* outcome tag mapping UI */
+.tag-map-section{background:var(--off-white);border:1px solid var(--border);border-radius:8px;padding:14px;margin-top:14px}
+.tag-map-title{font-size:11px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);margin-bottom:10px}
+.tag-map-row{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:8px;margin-bottom:8px;font-size:12px}
+.tag-map-row:last-child{margin-bottom:0}
+.tag-map-arrow{color:var(--ink-3);font-size:14px;text-align:center}
+.finput-sm{width:100%;background:var(--white);border:1px solid var(--border);border-radius:5px;padding:6px 9px;font-family:'IBM Plex Mono',monospace;font-size:12px;color:var(--ink);outline:none;transition:border-color .15s}
+.finput-sm:focus{border-color:var(--accent)}
+.finput-sm::placeholder{color:var(--ink-3)}
+
+.cfg-foot{padding:14px 24px;border-top:1px solid var(--border);display:flex;gap:8px;justify-content:flex-end}
+
+/* TOAST */
+.toast{position:fixed;bottom:22px;right:22px;background:var(--ink);color:#fff;font-size:13px;padding:10px 18px;border-radius:8px;z-index:999;box-shadow:var(--sh-md);transform:translateY(16px);opacity:0;transition:all .25s;max-width:320px;line-height:1.4}
+.toast.show{transform:translateY(0);opacity:1}
+.toast.err{background:var(--red)}
+
+/* EMPTY */
+.empty{padding:40px 20px;text-align:center;color:var(--ink-3)}
+.empty-icon{font-size:30px;margin-bottom:10px;opacity:.5}
+.empty-h{font-size:14px;color:var(--ink-2);font-weight:600;margin-bottom:5px}
+.empty-p{font-size:12px;line-height:1.6}
+
+::-webkit-scrollbar{width:5px}
+::-webkit-scrollbar-track{background:transparent}
+::-webkit-scrollbar-thumb{background:var(--border);border-radius:4px}
+</style>
+</head>
+<body>
+
+<div class="hdr">
+  <div class="hdr-l">
+    <div class="wordmark">Call<em>Board</em></div>
+    <div class="hdiv"></div>
+    <div class="hdr-meta" id="hdrMeta">Loading…</div>
+  </div>
+  <div class="hdr-r">
+    <div class="nav-tabs">
+      <button class="nav-tab active" id="tabLeaderboard" onclick="switchTab('leaderboard')">📊 Leaderboard</button>
+      <button class="nav-tab" id="tabWarRoom" onclick="switchTab('warroom')">⚡ War Room</button>
+    </div>
+    <div class="live-pill"><div class="live-dot"></div>Live</div>
+    <button class="btn btn-ghost" onclick="openCfg()">Configure</button>
+    <button class="btn btn-primary" id="refreshBtn" onclick="loadData()">Refresh</button>
+  </div>
+</div>
+
+<div class="page" id="leaderboardPage">
+  <div class="main-col">
+
+    <!-- KPIs — one per outcome + total -->
+    <div class="kpi-row" id="kpiRow">
+      <div class="kpi" style="animation-delay:0ms">
+        <div class="kpi-label">📞 Total Calls</div>
+        <div class="kpi-val" id="kTotal">—</div>
+        <div class="kpi-sub">All agents</div>
+      </div>
+      <div class="kpi" style="animation-delay:50ms">
+        <div class="kpi-label">📅 Meeting Booked</div>
+        <div class="kpi-val blue" id="kMeet">—</div>
+        <div class="kpi-sub" id="kMeetPct">—% book rate</div>
+      </div>
+      <div class="kpi" style="animation-delay:100ms">
+        <div class="kpi-label">✓ Connected</div>
+        <div class="kpi-val grn" id="kConn">—</div>
+        <div class="kpi-sub" id="kConnPct">—% of calls</div>
+      </div>
+      <div class="kpi" style="animation-delay:150ms">
+        <div class="kpi-label">✗ Not Interested</div>
+        <div class="kpi-val red" id="kNI">—</div>
+        <div class="kpi-sub" id="kNIPct">—% of calls</div>
+      </div>
+      <div class="kpi" style="animation-delay:200ms">
+        <div class="kpi-label">🏅 Top Agent</div>
+        <div class="kpi-val" id="kTop" style="font-size:18px;padding-top:4px">—</div>
+        <div class="kpi-sub" id="kTopSub">—</div>
+      </div>
+    </div>
+
+    <div class="sec-hdr">
+      <div class="sec-title">Leaderboard — Ranked by Meetings Booked</div>
+      <div class="sec-note" id="lastUpdated"></div>
+    </div>
+
+    <div class="lb-wrap">
+      <div class="lb-head">
+        <span>#</span><span>Agent</span>
+        <span style="text-align:right">📅 Meetings</span>
+        <span style="text-align:right">✓ Connected</span>
+        <span style="text-align:right">✗ No Answer</span>
+        <span style="text-align:right">All Calls</span>
+        <span>Book Rate</span>
+        <span>Status</span>
+      </div>
+      <div id="lbBody">
+        <div class="empty">
+          <div class="empty-icon">🏆</div>
+          <div class="empty-h">No data loaded</div>
+          <div class="empty-p">Click <strong>Configure</strong> to connect your Aircall account.</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- SIDE PANEL -->
+  <div class="side-col">
+    <!-- Outcome breakdown -->
+    <div class="outcome-legend" id="outcomeLegend" style="display:none">
+      <div class="legend-title">Outcome Breakdown</div>
+      <div class="legend-items" id="legendItems"></div>
+    </div>
+
+    <div class="side-title">
+      Recent Calls
+      <span class="filter-tag" id="filterTag" style="display:none" onclick="clearFilter()">✕ All agents</span>
+    </div>
+    <div class="call-list" id="callList">
+      <div class="empty">
+        <div class="empty-icon">📋</div>
+        <div class="empty-h">No calls</div>
+        <div class="empty-p">Calls appear here after data loads.</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- WAR ROOM PAGE -->
+<div class="wr-page" id="warRoomPage">
+  <div class="wr-kpi-row">
+    <div class="wr-kpi"><div class="wr-kpi-label">🔴 Live Calls</div><div class="wr-kpi-val" id="wrLiveCalls" style="color:var(--green)">—</div></div>
+    <div class="wr-kpi"><div class="wr-kpi-label">📅 Meetings Today</div><div class="wr-kpi-val" id="wrMeetings" style="color:var(--accent)">—</div></div>
+    <div class="wr-kpi"><div class="wr-kpi-label">📞 Calls Today</div><div class="wr-kpi-val" id="wrCallsToday">—</div></div>
+    <div class="wr-kpi"><div class="wr-kpi-label">✓ Book Rate</div><div class="wr-kpi-val" id="wrBookRate" style="color:var(--green)">—</div></div>
+  </div>
+  <div class="wr-grid">
+    <div class="wr-card wr-full">
+      <div class="wr-card-hdr">
+        <div class="wr-card-title"><div class="wr-pulse"></div>Calls In Progress</div>
+        <div style="font-size:11px;color:var(--ink-3)" id="wrLastPoll">Polling…</div>
+      </div>
+      <div class="wr-card-body">
+        <div class="live-call-list" id="wrLiveCallList">
+          <div style="font-size:12px;color:var(--ink-3);padding:8px 0">No active calls right now.</div>
+        </div>
+      </div>
+    </div>
+    <div class="wr-card">
+      <div class="wr-card-hdr">
+        <div class="wr-card-title">👤 Active Agents</div>
+        <div style="font-size:11px;color:var(--ink-3)" id="wrAgentCount">—</div>
+      </div>
+      <div class="wr-card-body">
+        <div class="agent-grid" id="wrAgentGrid">
+          <div style="font-size:12px;color:var(--ink-3)">No agents on calls.</div>
+        </div>
+      </div>
+    </div>
+    <div class="wr-card">
+      <div class="wr-card-hdr">
+        <div class="wr-card-title">⚡ Outcome Feed</div>
+        <div style="font-size:11px;color:var(--ink-3)" id="wrFeedCount">Today</div>
+      </div>
+      <div class="wr-card-body" style="padding:12px">
+        <div class="feed-list" id="wrFeedList">
+          <div style="font-size:12px;color:var(--ink-3);padding:4px 0">Waiting for calls to complete…</div>
+        </div>
+      </div>
+    </div>
+  </div>
+  <div class="wr-card">
+    <div class="wr-card-hdr">
+      <div class="wr-card-title">🏆 Live Leaderboard</div>
+    </div>
+    <div class="wr-card-body" style="padding:0">
+      <div class="lb-head" style="border-bottom:1px solid var(--border)">
+        <span>#</span><span>Agent</span>
+        <span style="text-align:right">📅 Meetings</span>
+        <span style="text-align:right">✓ Connected</span>
+        <span style="text-align:right">✗ No Answer</span>
+        <span style="text-align:right">All Calls</span>
+        <span>Book Rate</span>
+        <span>Status</span>
+      </div>
+      <div id="wrLbBody"></div>
+    </div>
+  </div>
+</div>
+<div class="overlay" id="detailOv" onclick="maybeClose(event,'detailOv')">
+  <div class="modal">
+    <div class="modal-hdr">
+      <div>
+        <div class="modal-caller" id="mCaller">—</div>
+        <div class="modal-sub" id="mSub">—</div>
+      </div>
+      <button class="close-btn" onclick="closeDetail()">✕</button>
+    </div>
+    <div class="modal-body" id="mBody"></div>
+  </div>
+</div>
+
+<!-- CONFIG MODAL -->
+<div class="cfg-ov" id="cfgOv" onclick="maybeClose(event,'cfgOv')">
+  <div class="cfg-modal">
+    <div class="cfg-hdr">
+      <div class="cfg-title">Configure CallBoard</div>
+      <button class="close-btn" onclick="closeCfg()">✕</button>
+    </div>
+    <div class="cfg-body">
+      <p class="cfg-desc">Enter your Aircall credentials from <strong>Dashboard → Integrations → API Keys</strong>. Then map your call outcome tags below.</p>
+
+      <div class="field">
+        <label class="flbl">API ID</label>
+        <input class="finput" id="cfgId" type="text" placeholder="e.g. a1b2c3d4e5f6" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label class="flbl">API Token</label>
+        <input class="finput" id="cfgToken" type="password" placeholder="••••••••••••••••" autocomplete="off"/>
+      </div>
+      <div class="field">
+        <label class="flbl">Date Range</label>
+        <select class="finput" id="cfgRange">
+          <option value="today">Today</option>
+          <option value="yesterday">Yesterday</option>
+          <option value="week">This Week</option>
+          <option value="lastweek">Last Week</option>
+          <option value="month">This Month</option>
+          <option value="lastmonth">Last Month</option>
+          <option value="alltime">All Time</option>
+        </select>
+      </div>
+
+      <!-- Tag mapping -->
+      <div class="tag-map-section">
+        <div class="tag-map-title">Outcome Tag Mapping</div>
+        <p style="font-size:11px;color:var(--ink-3);margin-bottom:10px;line-height:1.5">
+          Enter the tag name(s) you use in Aircall for each outcome. Comma-separate multiple tags. Leave blank to skip that outcome.
+        </p>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagMeeting" placeholder="e.g. meeting-booked, booked"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-blue">📅 Meeting Booked</span>
+        </div>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagConnected" placeholder="e.g. connected, spoke"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-green">✓ Connected</span>
+        </div>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagNI" placeholder="e.g. not-interested, no"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-red">✗ Not Interested</span>
+        </div>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagVM" placeholder="e.g. voicemail, vm"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-amber">📬 Voicemail</span>
+        </div>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagNoAnswer" placeholder="e.g. no-answer, missed"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-gray">No Answer</span>
+        </div>
+        <div class="tag-map-row">
+          <input class="finput-sm" id="tagCallBack" placeholder="e.g. callback, follow-up"/>
+          <div class="tag-map-arrow">→</div>
+          <span class="badge b-purple">🔄 Callback</span>
+        </div>
+      </div>
+
+      <div class="field" style="margin-top:14px">
+        <label class="flbl" style="display:flex;align-items:center;gap:7px;cursor:pointer;text-transform:none;letter-spacing:0;font-size:13px;font-weight:600">
+          <input type="checkbox" id="cfgMock" style="width:14px;height:14px"/>
+          Use demo data (no real API calls)
+        </label>
+      </div>
+    </div>
+    <div class="cfg-foot">
+      <button class="btn btn-ghost" onclick="closeCfg()">Cancel</button>
+      <button class="btn btn-primary" onclick="saveCfg()">Save & Load Data</button>
+    </div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+// ─────────────────────────────────────────────────────────────────
+// OUTCOME SYSTEM
+// Each call gets ONE outcome from this priority list (first match wins)
+// ─────────────────────────────────────────────────────────────────
+const OUTCOMES = [
+  { key: 'meeting',   label: '📅 Meeting Booked', short: 'Meeting',     badgeClass: 'b-blue',   color: '#1a5cff', dot: '#1a5cff' },
+  { key: 'connected', label: '✓ Connected',        short: 'Connected',   badgeClass: 'b-green',  color: '#0d6e4a', dot: '#0d6e4a' },
+  { key: 'callback',  label: '🔄 Callback',        short: 'Callback',    badgeClass: 'b-purple', color: '#5b21b6', dot: '#5b21b6' },
+  { key: 'voicemail', label: '📬 Voicemail',       short: 'Voicemail',   badgeClass: 'b-amber',  color: '#92570a', dot: '#d97706' },
+  { key: 'ni',        label: '✗ Not Interested',   short: 'Not Int.',    badgeClass: 'b-red',    color: '#c0392b', dot: '#c0392b' },
+  { key: 'noanswer',  label: 'No Answer',          short: 'No Answer',   badgeClass: 'b-gray',   color: '#7a7870', dot: '#b0aea7' },
+];
+const OUTCOME_UNKNOWN = { key: 'unknown', label: 'Unknown', short: '—', badgeClass: 'b-gray', color: '#7a7870', dot: '#b0aea7' };
+
+// ─────────────────────────────────────────────────────────────────
+// STATE
+// ─────────────────────────────────────────────────────────────────
+const PAL=[['#dbeafe','#1d4ed8'],['#dcfce7','#15803d'],['#fce7f3','#9d174d'],
+  ['#fef3c7','#92400e'],['#ede9fe','#5b21b6'],['#ffedd5','#9a3412'],
+  ['#e0f2fe','#0369a1'],['#f0fdf4','#166534']];
+const av=i=>PAL[i%PAL.length];
+const ini=n=>n.split(' ').map(p=>p[0]).join('').toUpperCase().slice(0,2);
+const fmtDur=s=>`${Math.floor(s/60)}m ${String(s%60).padStart(2,'0')}s`;
+
+function defaultTagMap() {
+  return {
+    meeting:   'meeting-booked,booked,meeting,scheduled,demo',
+    connected: 'connected,spoke,answered',
+    ni:        'not-interested,no,not interested,ni',
+    voicemail: 'voicemail,vm,left-voicemail',
+    noanswer:  'no-answer,missed,no answer',
+    callback:  'callback,follow-up,call-back',
+  };
+}
+
+const S = {
+  id:    localStorage.getItem('cb_id')||'',
+  token: localStorage.getItem('cb_tok')||'',
+  range: localStorage.getItem('cb_range')||'today',
+  mock:  localStorage.getItem('cb_mock')==='true',
+  tagMap: JSON.parse(localStorage.getItem('cb_tagmap')||'null') || defaultTagMap(),
+  calls: [],
+  filter: null,
+};
+
+// Build lookup: normalised tag string → outcome key
+function buildTagLookup(tagMap) {
+  const lookup = {};
+  for (const [key, val] of Object.entries(tagMap)) {
+    if (!val) continue;
+    val.split(',').map(t=>t.trim().toLowerCase()).filter(Boolean).forEach(t => {
+      if (!lookup[t]) lookup[t] = key;
+    });
+  }
+  return lookup;
+}
+
+function resolveOutcome(call, tagLookup) {
+  const tags = (call.tags || []).map(t => (t.name||t||'').toLowerCase().trim());
+
+  // 1. Check tags against user-configured mapping (priority order)
+  for (const outcome of OUTCOMES) {
+    if (tags.some(t => tagLookup[t] === outcome.key)) return outcome;
+  }
+
+  // 2. Fall back to Aircall's built-in status/disposition fields
+  const status   = (call.status || '').toLowerCase();
+  const disp     = (call.disposition || call.outcome || '').toLowerCase();
+  const combined = `${status} ${disp}`;
+
+  if (/meeting|booked|scheduled/.test(combined)) return OUTCOMES.find(o=>o.key==='meeting');
+  if (/connected|answered|done/.test(combined))  return OUTCOMES.find(o=>o.key==='connected');
+  if (/not.?interest|rejected/.test(combined))   return OUTCOMES.find(o=>o.key==='ni');
+  if (/voicemail|vm/.test(combined))             return OUTCOMES.find(o=>o.key==='voicemail');
+  if (/missed|no.?answer|abandoned/.test(combined)) return OUTCOMES.find(o=>o.key==='noanswer');
+  if (/callback|follow/.test(combined))          return OUTCOMES.find(o=>o.key==='callback');
+
+  // No tags and no recognisable status — infer from duration
+  // < 20s  → almost certainly no answer or hung up immediately
+  // 20–60s → likely voicemail
+  // > 60s  → real conversation happened, treat as Connected
+  const dur = call.duration || 0;
+  if (dur >= 60)  return OUTCOMES.find(o => o.key === 'connected');
+  if (dur >= 20)  return OUTCOMES.find(o => o.key === 'voicemail');
+  return OUTCOMES.find(o => o.key === 'noanswer');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// MOCK DATA
+// ─────────────────────────────────────────────────────────────────
+const MOCK_AGENTS=[
+  {id:1,name:'Claire Ashworth',team:'Enterprise'},
+  {id:2,name:'Marcus Webb',team:'SMB'},
+  {id:3,name:'Priya Menon',team:'Enterprise'},
+  {id:4,name:'Daniel Soh',team:'Inbound'},
+  {id:5,name:'Sophie Laurent',team:'SMB'},
+  {id:6,name:'James Adeyemi',team:'Enterprise'},
+];
+
+function mockData() {
+  const FNAMES=['Alice','Ben','Carol','Dan','Elena','Felix','Gina','Hugo','Isla','Jay','Kate','Leo'];
+  const LNAMES=['Harrison','Okafor','Chen','Murphy','Singh','Muller','Tanaka','Costa','Rivera','Park'];
+  const TOPICS=['Product enquiry','Pricing discussion','Renewal call','Inbound demo','Support escalation','Referral follow-up','Cold outreach'];
+  const MOCK_OUTCOMES_DIST = ['meeting','connected','connected','ni','noanswer','voicemail','callback','ni','connected','meeting'];
+
+  const calls=[];const now=Date.now();
+  for(let i=0;i<42;i++){
+    const ag=MOCK_AGENTS[Math.floor(Math.random()*MOCK_AGENTS.length)];
+    const outcomeKey=MOCK_OUTCOMES_DIST[Math.floor(Math.random()*MOCK_OUTCOMES_DIST.length)];
+    const outcome=OUTCOMES.find(o=>o.key===outcomeKey)||OUTCOME_UNKNOWN;
+    const dur=Math.floor(Math.random()*840)+60;
+    const caller=`${FNAMES[Math.floor(Math.random()*FNAMES.length)]} ${LNAMES[Math.floor(Math.random()*LNAMES.length)]}`;
+    const topic=TOPICS[Math.floor(Math.random()*TOPICS.length)];
+    const ts=new Date(now-Math.random()*27000000);
+    calls.push({
+      id:`c${i}`, caller, topic,
+      agent:ag.name, agentId:ag.id, team:ag.team,
+      outcome,
+      duration:dur, ts,
+      tags: [outcomeKey],
+      summary: mockSummary(caller, ag.name, outcome, topic),
+      transcript: mockTranscript(caller, ag.name, topic),
+      rawDebug: {status:'done', tags:[{name:outcomeKey}], disposition:''},
+    });
+  }
+  return calls.sort((a,b)=>b.ts-a.ts);
+}
+
+function mockSummary(caller, agent, outcome, topic) {
+  const map = {
+    meeting:   `${agent} successfully engaged ${caller} on a ${topic.toLowerCase()} call. A meeting has been confirmed for this week. Action: send calendar invite and pre-read.`,
+    connected: `${agent} connected with ${caller} about ${topic.toLowerCase()}. The prospect is interested but needs more time. ${agent} to follow up in one week.`,
+    ni:        `${agent} spoke with ${caller}. The prospect is not interested at this time — cited budget constraints. Door left open for a future conversation.`,
+    voicemail: `${agent} left a voicemail for ${caller} regarding ${topic.toLowerCase()}. Awaiting callback. Follow-up scheduled in 2 days.`,
+    noanswer:  `${agent} attempted to reach ${caller} — no answer. Will retry tomorrow.`,
+    callback:  `${agent} spoke briefly with ${caller}. Prospect asked for a callback at a more convenient time. Rescheduled for later this week.`,
+  };
+  return map[outcome.key] || `${agent} called ${caller}.`;
+}
+
+function mockTranscript(caller, agent, topic) {
+  const a=agent.split(' ')[0], c=caller.split(' ')[0];
+  return [
+    {speaker:'agent',   name:a, text:`Hi ${c}, this is ${a} calling from TechCo. Is now a good time for a quick chat about ${topic.toLowerCase()}?`},
+    {speaker:'customer',name:c, text:`Sure, I have a few minutes. I've actually been meaning to reach out.`},
+    {speaker:'agent',   name:a, text:`Perfect. I wanted to follow up on the information we sent over. Any initial thoughts?`},
+    {speaker:'customer',name:c, text:`Yes — mainly questions around pricing for our team size. We're about 80 people.`},
+    {speaker:'agent',   name:a, text:`Great, our Growth tier is a great fit for that size. Integration is typically same-day.`},
+    {speaker:'customer',name:c, text:`That's faster than I expected. Is there a trial option before committing?`},
+    {speaker:'agent',   name:a, text:`Absolutely — 14-day pilot, no commitment. I can have the team set it up this week if you're free for a quick onboarding call?`},
+    {speaker:'customer',name:c, text:`Yes, let's do it. Send me some times and I'll get it in the diary.`},
+  ];
+}
+
+// ─────────────────────────────────────────────────────────────────
+// AIRCALL FETCH  (proxied via local server.js)
+// ─────────────────────────────────────────────────────────────────
+async function proxyGet(path) {
+  const creds = btoa(`${S.id}:${S.token}`);
+  // path may start with /v1/... (Aircall endpoints) or /calls/all (our server endpoint)
+  const url = path.startsWith("/calls/all") ? `/api${path}` : `/api/v1${path.startsWith("/v1") ? path.slice(3) : path}`;
+  const res = await fetch(url, {
+    headers: { "Authorization": `Basic ${creds}`, "Content-Type": "application/json" }
+  });
+  if (!res.ok) {
+    let msg = `Server error ${res.status}`;
+    try { const j = await res.json(); msg = j.error || j.message || msg; } catch(e){}
+    throw new Error(msg);
+  }
+  return res.json();
+}
+
+async function fetchAircall() {
+  const tagLookup    = buildTagLookup(S.tagMap);
+  const { from, to } = getDateRange(S.range);
+
+  // Single request to server — server handles all pagination internally
+  let qs = "";
+  if (from) qs += `?from=${from}`;
+  if (to)   qs += `${qs ? "&" : "?"}to=${to}`;
+
+  const data = await proxyGet(`/calls/all${qs}`);
+
+  if (data.error) throw new Error(data.error);
+
+  const allRaw = data.calls || [];
+  console.log(`[CallBoard] ✅ Received ${allRaw.length} calls from server`);
+  if (allRaw.length > 0) {
+    console.log("[CallBoard] First call fields:", Object.keys(allRaw[0]));
+    console.log("[CallBoard] First call sample:", JSON.stringify(allRaw[0], null, 2));
+  }
+
+  return allRaw.map(c => mapCall(c, tagLookup));
+}
+
+function getDateRange(range) {
+  const now   = Math.floor(Date.now() / 1000);
+  const sod   = () => { const d = new Date(); d.setHours(0,0,0,0); return Math.floor(d/1000); };
+  const dow   = () => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(d.getDate()-d.getDay()+1); return Math.floor(d/1000); }; // Mon
+  const som   = () => { const d = new Date(); d.setHours(0,0,0,0); d.setDate(1); return Math.floor(d/1000); };
+
+  switch (range) {
+    case 'today':     return { from: sod(),         to: null };
+    case 'yesterday': { const yd = sod()-86400; return { from: yd, to: yd+86399 }; }
+    case 'week':      return { from: dow(),          to: null };
+    case 'lastweek':  return { from: dow()-604800,   to: dow()-1 };
+    case 'month':     return { from: som(),          to: null };
+    case 'lastmonth': {
+      const d = new Date(); d.setDate(1); d.setHours(0,0,0,0);
+      const endOfLast = Math.floor(d/1000) - 1;
+      d.setMonth(d.getMonth() - 1);
+      return { from: Math.floor(d/1000), to: endOfLast };
+    }
+    case 'alltime':   return { from: null, to: null };
+    default:          return { from: sod(), to: null };
+  }
+}
+
+// Map a raw Aircall call object to our internal format
+// Uses only data from the call list — fast, no extra requests
+function mapCall(c, tagLookup) {
+  const tags = (c.tags || []).map(t => t.name || t).filter(Boolean);
+  const outcome = resolveOutcome(c, tagLookup);
+
+  return {
+    id:       String(c.id),
+    caller:   c.contact?.name || c.raw_digits || c.phone_number || 'Unknown',
+    topic:    tags.join(', ') || '',
+    agent:    c.user?.name || c.assigned_to?.name || 'Unknown',
+    agentId:  c.user?.id,
+    team:     c.teams?.[0]?.name || '',
+    outcome,
+    duration: c.duration || 0,
+    ts:       new Date((c.started_at || c.created_at) * 1000),
+    tags,
+    summary:  c.comments?.[0]?.content || c.notes || '',
+    transcript:   null, // loaded on demand when call is opened
+    _detailLoaded: false,
+    _raw: c,
+    _rawTx: null,
+  };
+}
+
+// Called when user opens a call — fetches detail + transcription on demand
+async function loadCallDetail(callId) {
+  const call = S.calls.find(c => c.id === callId);
+  if (!call || call._detailLoaded) return call;
+
+  let detail = call._raw;
+
+  try {
+    const d = await proxyGet(`/v1/calls/${callId}`);
+    detail = d.call || d || call._raw;
+    call._raw = detail;
+    call.summary = detail.comments?.[0]?.content || detail.notes || call.summary || '';
+  } catch(e) {
+    console.warn(`[CallBoard] Detail fetch failed for ${callId}:`, e.message);
+  }
+
+  let rawTx = null;
+  try {
+    rawTx = await proxyGet(`/v1/calls/${callId}/transcription`);
+    console.log(`[CallBoard] Transcription response for ${callId}:`, rawTx);
+  } catch(e) {
+    if (!e.message.includes('404')) console.warn(`[CallBoard] Transcription failed for ${callId}:`, e.message);
+  }
+
+  call._rawTx = rawTx;
+  call.transcript = parseTranscript(detail, rawTx);
+  call._detailLoaded = true;
+
+  console.log(`[CallBoard] Call ${callId} detail loaded — transcript lines: ${call.transcript.length}`);
+  return call;
+}
+
+// Stub kept for compat — detail now loaded on demand
+async function enrichCall(c, tagLookup) { return mapCall(c, tagLookup); }
+
+function parseTranscript(detail, txResponse) {
+  // ── Priority order of where Aircall may store transcription data ──
+
+  // 1. Dedicated /transcription endpoint response (Aircall AI)
+  //    Shape: { transcription: { utterances: [...] } } or { utterances: [...] }
+  if (txResponse) {
+    const utterances = txResponse.transcription?.utterances
+      || txResponse.utterances
+      || txResponse.transcription
+      || null;
+
+    if (Array.isArray(utterances) && utterances.length) {
+      return utterances.map(u => ({
+        speaker: resolveTranscriptSpeaker(u),
+        name:    u.speaker_name || u.name || (resolveTranscriptSpeaker(u) === 'agent' ? 'Agent' : 'Customer'),
+        text:    u.text || u.content || u.transcript || '',
+      })).filter(l => l.text.trim());
+    }
+
+    // Sometimes it's a flat string
+    if (typeof txResponse.transcription === 'string' && txResponse.transcription.trim()) {
+      return parseTranscriptString(txResponse.transcription, detail.user?.name);
+    }
+    if (typeof txResponse === 'string' && txResponse.trim()) {
+      return parseTranscriptString(txResponse, detail.user?.name);
+    }
+  }
+
+  // 2. Inline on call detail object (older API versions / some integrations)
+  const inline = detail.transcription
+    || detail.recording?.transcription
+    || detail.recording?.transcript
+    || detail.transcript
+    || null;
+
+  if (inline) {
+    if (Array.isArray(inline)) {
+      return inline.map(u => ({
+        speaker: resolveTranscriptSpeaker(u),
+        name:    u.speaker_name || u.name || (resolveTranscriptSpeaker(u) === 'agent' ? 'Agent' : 'Customer'),
+        text:    u.text || u.content || '',
+      })).filter(l => l.text.trim());
+    }
+    if (typeof inline === 'string' && inline.trim()) {
+      return parseTranscriptString(inline, detail.user?.name);
+    }
+  }
+
+  return [];
+}
+
+function resolveTranscriptSpeaker(utterance) {
+  const ch = utterance.channel;
+  const sp = (utterance.speaker || utterance.role || utterance.type || '').toLowerCase();
+  // channel 0 = agent, channel 1 = customer (Aircall convention)
+  if (ch === 0 || ch === '0') return 'agent';
+  if (ch === 1 || ch === '1') return 'customer';
+  if (/agent|rep|user|internal/.test(sp)) return 'agent';
+  if (/customer|contact|external|lead/.test(sp)) return 'customer';
+  return 'customer'; // safe default
+}
+
+function parseTranscriptString(str, agentName) {
+  const agentFirst = (agentName || '').split(' ')[0];
+  return str.split('\n').filter(Boolean).map(line => {
+    const match = line.match(/^([^:]{1,40}):\s*(.+)$/);
+    if (match) {
+      const speaker_label = match[1].trim();
+      const isAgent = /agent|rep/i.test(speaker_label)
+        || (agentFirst && speaker_label.toLowerCase().includes(agentFirst.toLowerCase()));
+      return { speaker: isAgent ? 'agent' : 'customer', name: speaker_label, text: match[2].trim() };
+    }
+    return { speaker: 'unknown', name: '—', text: line.trim() };
+  }).filter(l => l.text);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// LOAD
+// ─────────────────────────────────────────────────────────────────
+async function loadData() {
+  const btn = document.getElementById('refreshBtn');
+  btn.disabled = true; btn.textContent = 'Loading…';
+  try {
+    if (S.mock) {
+      await new Promise(r => setTimeout(r, 700));
+      S.calls = mockData();
+    } else {
+      if (!S.id || !S.token) { openCfg(); return; }
+      S.calls = await fetchAircall();
+    }
+    render();
+    showToast(`✓ ${S.calls.length} calls loaded`);
+  } catch(e) {
+    showToast(e.message, true);
+    console.error('[CallBoard] Load error:', e);
+  } finally {
+    btn.disabled = false; btn.textContent = 'Refresh';
+  }
+}
+
+// ─────────────────────────────────────────────────────────────────
+// AGENT STATS
+// ─────────────────────────────────────────────────────────────────
+function agentStats() {
+  const m = {};
+  S.calls.forEach(c => {
+    if (!m[c.agent]) {
+      m[c.agent] = { name: c.agent, team: c.team, calls: 0, dur: 0 };
+      OUTCOMES.forEach(o => m[c.agent][o.key] = 0);
+      m[c.agent]['unknown'] = 0;
+    }
+    m[c.agent].calls++;
+    m[c.agent].dur += c.duration;
+    const key = c.outcome?.key || 'unknown';
+    if (m[c.agent][key] !== undefined) m[c.agent][key]++;
+    else m[c.agent][key] = 1;
+  });
+
+  return Object.values(m).map(a => ({
+    ...a,
+    avgDur:   a.calls ? Math.round(a.dur / a.calls) : 0,
+    bookRate: a.calls ? Math.round((a.meeting || 0) / a.calls * 100) : 0,
+  })).sort((a, b) => (b.meeting||0) - (a.meeting||0) || b.bookRate - a.bookRate);
+}
+
+// ─────────────────────────────────────────────────────────────────
+// RENDER
+// ─────────────────────────────────────────────────────────────────
+function render() {
+  renderKPIs();
+  renderLegend();
+  renderLB();
+  renderCalls();
+  const rng = { today:'Today', yesterday:'Yesterday', week:'This Week', lastweek:'Last Week', month:'This Month', lastmonth:'Last Month', alltime:'All Time' };
+  document.getElementById('lastUpdated').textContent = `Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+  document.getElementById('hdrMeta').textContent = `${rng[S.range]||'Today'} · ${S.mock ? 'Demo data' : 'Live — Aircall'}`;
+}
+
+function renderKPIs() {
+  const total = S.calls.length;
+  const meet  = S.calls.filter(c => c.outcome?.key === 'meeting').length;
+  const conn  = S.calls.filter(c => c.outcome?.key === 'connected').length;
+  const ni    = S.calls.filter(c => c.outcome?.key === 'ni').length;
+  const top   = agentStats()[0];
+  const pct   = n => total ? `${Math.round(n/total*100)}% of calls` : '—% of calls';
+
+  document.getElementById('kTotal').textContent  = total;
+  document.getElementById('kMeet').textContent   = meet;
+  document.getElementById('kMeetPct').textContent = total ? `${Math.round(meet/total*100)}% book rate` : '—% book rate';
+  document.getElementById('kConn').textContent   = conn;
+  document.getElementById('kConnPct').textContent = pct(conn);
+  document.getElementById('kNI').textContent     = ni;
+  document.getElementById('kNIPct').textContent  = pct(ni);
+  if (top) {
+    document.getElementById('kTop').textContent    = top.name.split(' ')[0];
+    document.getElementById('kTopSub').textContent = `${top.meeting||0} meetings · ${top.bookRate}% rate`;
+  }
+}
+
+function renderLegend() {
+  if (!S.calls.length) return;
+  const legend = document.getElementById('outcomeLegend');
+  const items  = document.getElementById('legendItems');
+  legend.style.display = 'block';
+
+  const counts = {};
+  S.calls.forEach(c => {
+    const k = c.outcome?.key || 'unknown';
+    counts[k] = (counts[k]||0) + 1;
+  });
+
+  const allOutcomes = [...OUTCOMES, OUTCOME_UNKNOWN];
+  items.innerHTML = allOutcomes
+    .filter(o => counts[o.key])
+    .map(o => `
+      <div class="legend-row">
+        <div class="legend-label">
+          <div class="legend-dot" style="background:${o.dot}"></div>
+          ${o.label}
+        </div>
+        <div class="legend-count">${counts[o.key]||0}</div>
+      </div>`).join('');
+}
+
+function renderLB() {
+  const stats = agentStats();
+  const el = document.getElementById('lbBody');
+  if (!stats.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">🏆</div><div class="empty-h">No data</div></div>`; return;
+  }
+  el.innerHTML = stats.map((a, i) => {
+    const [bg,fg] = av(i);
+    const rc  = i < 3 ? `r${i+1}` : '';
+    const sym = i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    const sb  = a.bookRate>=50 ? '<span class="badge b-green">Strong</span>'
+              : a.bookRate>=25 ? '<span class="badge b-amber">Building</span>'
+              :                  '<span class="badge b-red">Low</span>';
+    return `<div class="lb-row ${rc}" onclick="agentFilter('${a.name}')" style="animation-delay:${i*45}ms">
+      <div><div class="rank-badge">${sym}</div></div>
+      <div class="agent-cell">
+        <div class="avatar" style="background:${bg};color:${fg}">${ini(a.name)}</div>
+        <div><div class="agent-name">${a.name}</div><div class="agent-team">${a.team||'—'}</div></div>
+      </div>
+      <div class="meet-val">${a.meeting||0}</div>
+      <div class="cell-mono">${a.connected||0}</div>
+      <div class="cell-mono">${a.noanswer||0}</div>
+      <div class="cell-mono">${a.calls}</div>
+      <div><div class="bar-wrap"><div class="bar-lbl">${a.bookRate}%</div><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(a.bookRate,100)}%"></div></div></div></div>
+      <div>${sb}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderCalls() {
+  let calls = S.calls;
+  if (S.filter) calls = calls.filter(c => c.agent === S.filter);
+  const el = document.getElementById('callList');
+  const ft = document.getElementById('filterTag');
+  ft.style.display = S.filter ? 'inline-flex' : 'none';
+  if (S.filter) ft.textContent = `✕ ${S.filter.split(' ')[0]}`;
+  if (!calls.length) {
+    el.innerHTML = `<div class="empty"><div class="empty-icon">📋</div><div class="empty-h">No calls</div></div>`; return;
+  }
+  el.innerHTML = calls.slice(0, 25).map((c, i) => {
+    const o = c.outcome || OUTCOME_UNKNOWN;
+    const t = c.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return `<div class="call-card" onclick="openDetail('${c.id}')" style="animation-delay:${i*25}ms">
+      <div class="call-card-top">
+        <div class="caller">${c.caller}</div>
+        <div class="call-time">${t} · ${Math.floor(c.duration/60)}m</div>
+      </div>
+      <div class="call-agent-line">→ ${c.agent}</div>
+      <div class="call-footer">
+        <span class="badge ${o.badgeClass}" style="font-size:10px">${o.label}</span>
+        ${c.topic ? `<span style="font-size:10px;color:var(--ink-3)">${c.topic.substring(0,24)}</span>` : ''}
+      </div>
+    </div>`;
+  }).join('');
+}
+
+// ─────────────────────────────────────────────────────────────────
+// FILTER
+// ─────────────────────────────────────────────────────────────────
+function agentFilter(n) { S.filter = S.filter===n ? null : n; renderCalls(); }
+function clearFilter()  { S.filter = null; renderCalls(); }
+
+// ─────────────────────────────────────────────────────────────────
+// DETAIL MODAL
+// ─────────────────────────────────────────────────────────────────
+function renderModalBody(c) {
+  const o = c.outcome || OUTCOME_UNKNOWN;
+
+  // Transcript
+  let txHtml;
+  if (c.transcript && c.transcript.length) {
+    txHtml = c.transcript.map(l => `
+      <div class="t-line">
+        <span class="t-sp ${l.speaker==='agent'?'t-ag':l.speaker==='customer'?'t-cu':''}">${escHtml(l.name)}:</span>
+        <span class="t-tx">${escHtml(l.text)}</span>
+      </div>`).join('');
+  } else if (S.mock) {
+    txHtml = `<div style="color:var(--ink-3)">No transcript in demo mode.</div>`;
+  } else if (!c._detailLoaded) {
+    txHtml = `<div class="tx-loading">⏳ Loading transcript…</div>`;
+  } else {
+    txHtml = `<div style="color:var(--ink-3);font-size:12px;line-height:1.7">
+      No transcript found for this call. Check the <strong>Raw API Data</strong> panel below
+      to see what Aircall returned — look for <code>transcription_endpoint_response</code>.
+    </div>`;
+  }
+
+  // Summary
+  const summaryHtml = c.summary
+    ? `<div class="summary-box">${escHtml(c.summary)}</div>`
+    : `<div class="summary-box" style="color:var(--ink-3);font-style:italic">No notes recorded.</div>`;
+
+  // Tags
+  const tagsHtml = c.tags?.length
+    ? c.tags.map(t => `<span class="badge b-gray" style="margin-right:4px;margin-bottom:4px">${escHtml(t)}</span>`).join('')
+    : '<span style="color:var(--ink-3);font-size:12px">No tags on this call</span>';
+
+  // Raw inspector — shows exactly what Aircall returned
+  const rawJson = JSON.stringify({
+    status:       c._raw?.status,
+    direction:    c._raw?.direction,
+    disposition:  c._raw?.disposition,
+    tags:         c._raw?.tags,
+    user:         c._raw?.user ? { id: c._raw.user.id, name: c._raw.user.name } : null,
+    contact:      c._raw?.contact ? { id: c._raw.contact.id, name: c._raw.contact.name } : null,
+    transcription_in_detail:       c._raw?.transcription || null,
+    recording:                     c._raw?.recording     || null,
+    transcription_endpoint_response: c._rawTx            || null,
+  }, null, 2);
+
+  document.getElementById('mBody').innerHTML = `
+    <div class="meta-grid">
+      <div class="meta-box"><div class="meta-lbl">Outcome</div><div class="meta-val"><span class="badge ${o.badgeClass}">${o.label}</span></div></div>
+      <div class="meta-box"><div class="meta-lbl">Duration</div><div class="meta-val">${fmtDur(c.duration)}</div></div>
+      <div class="meta-box"><div class="meta-lbl">Direction</div><div class="meta-val">${c._raw?.direction||'—'}</div></div>
+      <div class="meta-box"><div class="meta-lbl">Status</div><div class="meta-val" style="font-size:11px;font-family:'IBM Plex Mono',monospace">${c._raw?.status||'—'}</div></div>
+    </div>
+    <div class="dsec"><div class="dsec-title">Tags</div><div style="display:flex;flex-wrap:wrap;gap:4px;margin-top:4px">${tagsHtml}</div></div>
+    <div class="dsec"><div class="dsec-title">Call Notes</div>${summaryHtml}</div>
+    <div class="dsec"><div class="dsec-title">Transcript</div><div class="tx-wrap" id="txWrap">${txHtml}</div></div>
+    <div class="dsec">
+      <div class="dsec-title" style="display:flex;justify-content:space-between;align-items:center">
+        Raw API Data <span style="font-size:10px;color:var(--ink-3);font-weight:400">Diagnose outcomes &amp; transcripts</span>
+        <button onclick="toggleDebug()" class="btn btn-ghost" style="font-size:10px;padding:3px 8px" id="debugToggleBtn">Show</button>
+      </div>
+      <div id="debugPanel" style="display:none">
+        <div class="tx-wrap" style="color:#94a3b8;background:#1a1916;max-height:240px;white-space:pre">${escHtml(rawJson)}</div>
+      </div>
+    </div>`;
+}
+
+async function openDetail(id) {
+  const c = S.calls.find(x => x.id === id);
+  if (!c) return;
+
+  // Show modal immediately with what we have
+  document.getElementById('mCaller').textContent = c.caller;
+  document.getElementById('mSub').textContent = `${c.agent} · ${c.team||'No team'} · ${c.ts.toLocaleDateString()} ${c.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'})}`;
+  renderModalBody(c);
+  document.getElementById('detailOv').classList.add('open');
+
+  // If not yet loaded, fetch detail + transcript in background and re-render
+  if (!S.mock && !c._detailLoaded) {
+    try {
+      await loadCallDetail(id);
+      // Only re-render if modal is still open for the same call
+      if (document.getElementById('detailOv').classList.contains('open')
+          && document.getElementById('mCaller').textContent === c.caller) {
+        renderModalBody(c);
+      }
+    } catch(e) {
+      console.warn('[CallBoard] openDetail enrich failed:', e.message);
+    }
+  }
+}
+
+function closeDetail() { document.getElementById('detailOv').classList.remove('open'); }
+
+// ─────────────────────────────────────────────────────────────────
+// CONFIG MODAL
+// ─────────────────────────────────────────────────────────────────
+function openCfg() {
+  document.getElementById('cfgId').value    = S.id;
+  document.getElementById('cfgToken').value = S.token;
+  document.getElementById('cfgRange').value = S.range;
+  document.getElementById('cfgMock').checked = S.mock;
+
+  const tm = S.tagMap;
+  document.getElementById('tagMeeting').value   = tm.meeting   || '';
+  document.getElementById('tagConnected').value = tm.connected || '';
+  document.getElementById('tagNI').value        = tm.ni        || '';
+  document.getElementById('tagVM').value        = tm.voicemail || '';
+  document.getElementById('tagNoAnswer').value  = tm.noanswer  || '';
+  document.getElementById('tagCallBack').value  = tm.callback  || '';
+
+  document.getElementById('cfgOv').classList.add('open');
+}
+
+function closeCfg() { document.getElementById('cfgOv').classList.remove('open'); }
+
+function saveCfg() {
+  S.id    = document.getElementById('cfgId').value.trim();
+  S.token = document.getElementById('cfgToken').value.trim();
+  S.range = document.getElementById('cfgRange').value;
+  S.mock  = document.getElementById('cfgMock').checked;
+  S.tagMap = {
+    meeting:   document.getElementById('tagMeeting').value.trim(),
+    connected: document.getElementById('tagConnected').value.trim(),
+    ni:        document.getElementById('tagNI').value.trim(),
+    voicemail: document.getElementById('tagVM').value.trim(),
+    noanswer:  document.getElementById('tagNoAnswer').value.trim(),
+    callback:  document.getElementById('tagCallBack').value.trim(),
+  };
+
+  localStorage.setItem('cb_id',     S.id);
+  localStorage.setItem('cb_tok',    S.token);
+  localStorage.setItem('cb_range',  S.range);
+  localStorage.setItem('cb_mock',   String(S.mock));
+  localStorage.setItem('cb_tagmap', JSON.stringify(S.tagMap));
+
+  closeCfg();
+  loadData();
+}
+
+// ─────────────────────────────────────────────────────────────────
+// HELPERS
+// ─────────────────────────────────────────────────────────────────
+function maybeClose(e, id) { if (e.target === document.getElementById(id)) document.getElementById(id).classList.remove('open'); }
+
+function toggleDebug() {
+  const panel = document.getElementById('debugPanel');
+  const btn   = document.getElementById('debugToggleBtn');
+  if (!panel || !btn) return;
+  const shown = panel.style.display !== 'none';
+  panel.style.display = shown ? 'none' : 'block';
+  btn.textContent = shown ? 'Show' : 'Hide';
+}
+
+function escHtml(str) {
+  return String(str)
+    .replace(/&/g,'&amp;')
+    .replace(/</g,'&lt;')
+    .replace(/>/g,'&gt;')
+    .replace(/"/g,'&quot;');
+}
+
+function showToast(msg, err=false) {
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.className = `toast show${err?' err':''}`;
+  setTimeout(() => t.className = 'toast', 3500);
+}
+
+// ─── TAB SWITCHING ───────────────────────────────────────────────
+function switchTab(tab) {
+  const isWarRoom = tab === 'warroom';
+  document.getElementById('leaderboardPage').classList.toggle('hidden', isWarRoom);
+  document.getElementById('warRoomPage').classList.toggle('visible', isWarRoom);
+  document.getElementById('tabLeaderboard').classList.toggle('active', !isWarRoom);
+  document.getElementById('tabWarRoom').classList.toggle('active', isWarRoom);
+  if (isWarRoom) startWarRoom(); else stopWarRoom();
+}
+
+// ─── WAR ROOM ────────────────────────────────────────────────────
+const WR = { interval: null, tickInterval: null, liveCalls: [], agents: [] };
+
+function startWarRoom() {
+  pollWarRoom();
+  WR.interval     = setInterval(pollWarRoom, 10000);
+  WR.tickInterval = setInterval(() => { if (WR.liveCalls.length) renderWrLiveCalls(); }, 1000);
+}
+function stopWarRoom() {
+  if (WR.interval)     { clearInterval(WR.interval);     WR.interval     = null; }
+  if (WR.tickInterval) { clearInterval(WR.tickInterval); WR.tickInterval = null; }
+}
+
+async function pollWarRoom() {
+  if (!S.id || !S.token) return;
+  try {
+    const [callsResp, availResp] = await Promise.all([
+      proxyGet('/v1/calls?status=answered&order=desc&per_page=50'),
+      proxyGet('/v1/users/availabilities'),
+    ]);
+    // Only calls with no ended_at (still connected) and started within last 4 hours
+    const cutoff = Math.floor(Date.now() / 1000) - 14400;
+    const raw = callsResp.calls || [];
+    WR.liveCalls = raw.filter(c => {
+      const ended = c.ended_at;
+      const started = c.answered_at || c.started_at || 0;
+      return (!ended || ended === 0) && started > cutoff;
+    });
+    WR.agents = availResp.users || [];
+    renderWarRoom();
+    document.getElementById('wrLastPoll').textContent = `Updated ${new Date().toLocaleTimeString([],{hour:'2-digit',minute:'2-digit',second:'2-digit'})}`;
+  } catch(e) { console.warn('[WarRoom] Poll failed:', e.message); }
+}
+
+function renderWarRoom() {
+  // KPIs
+  const meet    = S.calls.filter(c => c.outcome?.key === 'meeting').length;
+  const total   = S.calls.length;
+  const reached = S.calls.filter(c => !['noanswer','voicemail'].includes(c.outcome?.key)).length;
+  const rate    = reached ? Math.round(meet / reached * 100) : 0;
+  document.getElementById('wrLiveCalls').textContent  = WR.liveCalls.length;
+  document.getElementById('wrMeetings').textContent   = meet;
+  document.getElementById('wrCallsToday').textContent = total;
+  document.getElementById('wrBookRate').textContent   = rate + '%';
+  renderWrLiveCalls();
+  renderWrAgents();
+  renderWrFeed();
+  renderWrLeaderboard();
+}
+
+function renderWrLiveCalls() {
+  const el = document.getElementById('wrLiveCallList');
+  document.getElementById('wrLiveCalls').textContent = WR.liveCalls.length;
+  if (!WR.liveCalls.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink-3);padding:8px 0">No active calls right now.</div>`;
+    return;
+  }
+  el.innerHTML = WR.liveCalls.map((c, i) => {
+    const [bg,fg]   = PAL[i % PAL.length];
+    const agentName = c.user?.name || 'Unknown';
+    const caller    = c.contact?.name || c.raw_digits || 'Unknown';
+    const number    = c.number?.name || '';
+    const dir       = c.direction || 'outbound';
+    const startedAt = c.answered_at || c.started_at;
+    const elapsed   = startedAt ? Math.floor(Date.now()/1000 - startedAt) : 0;
+    const isRinging = !c.answered_at;
+    const listenUrl = `https://dashboard.aircall.io/calls/${c.id}`;
+    return `<div class="live-call${isRinging?' ringing':''}">
+      <div class="lc-avatar" style="background:${bg};color:${fg}">${ini(agentName)}</div>
+      <div class="lc-info">
+        <div class="lc-agent">${escHtml(agentName)}</div>
+        <div class="lc-caller">📞 ${escHtml(caller)}</div>
+        ${number ? `<div class="lc-number">${escHtml(number)}</div>` : ''}
+      </div>
+      <div class="lc-right">
+        <div class="lc-timer${isRinging?' ringing':''}">${isRinging ? '🔔 Ringing' : fmtDur(elapsed)}</div>
+        <div class="lc-dir ${dir==='inbound'?'in':'out'}">${dir}</div>
+        <a class="lc-listen" href="${listenUrl}" target="_blank">👂 Listen in ↗</a>
+      </div>
+    </div>`;
+  }).join('');
+}
+
+function renderWrAgents() {
+  const el = document.getElementById('wrAgentGrid');
+  const liveMap = {};
+  WR.liveCalls.forEach(c => { if (c.user?.id) liveMap[c.user.id] = c; });
+  const activeIds = Object.keys(liveMap);
+  document.getElementById('wrAgentCount').textContent = `${activeIds.length} on calls now`;
+  if (!activeIds.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink-3)">No agents currently on a call.</div>`;
+    return;
+  }
+  const agentDetails = {};
+  S.calls.forEach(c => { if (c.agentId && c.agent) agentDetails[c.agentId] = c.agent; });
+  el.innerHTML = activeIds.map((id, i) => {
+    const lc    = liveMap[id];
+    const name  = lc.user?.name || agentDetails[id] || `Agent ${id}`;
+    const [bg,fg] = PAL[i % PAL.length];
+    const isRinging = !lc.answered_at;
+    const statusClass = isRinging ? 'ringing' : 'in-call';
+    const statusLabel = isRinging ? '🔔 Ringing' : '📞 On Call';
+    const elapsed = lc.answered_at ? fmtDur(Math.floor(Date.now()/1000 - lc.answered_at)) : '';
+    return `<div class="agent-tile ${statusClass}">
+      <div class="at-avatar" style="background:${bg};color:${fg}">${ini(name)}</div>
+      <div class="at-name" title="${escHtml(name)}">${escHtml(name.split(' ')[0])}</div>
+      <div class="at-status ${statusClass}">${statusLabel}</div>
+      ${elapsed ? `<div class="at-duration">${elapsed}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderWrFeed() {
+  const el = document.getElementById('wrFeedList');
+  const done = S.calls.filter(c => c.outcome?.key).slice(0, 30);
+  if (!done.length) {
+    el.innerHTML = `<div style="font-size:12px;color:var(--ink-3);padding:4px 0">Waiting for calls to complete…</div>`;
+    return;
+  }
+  document.getElementById('wrFeedCount').textContent = `${done.length} today`;
+  el.innerHTML = done.map((c, i) => {
+    const o = c.outcome || OUTCOME_UNKNOWN;
+    const t = c.ts.toLocaleTimeString([],{hour:'2-digit',minute:'2-digit'});
+    return `<div class="feed-item" style="animation-delay:${i*20}ms">
+      <div class="feed-time">${t}</div>
+      <div class="feed-agent">${escHtml(c.agent.split(' ')[0])}</div>
+      <span class="badge ${o.badgeClass}" style="font-size:10px;flex-shrink:0">${o.label}</span>
+      <div class="feed-caller">${escHtml(c.caller)}</div>
+    </div>`;
+  }).join('');
+}
+
+function renderWrLeaderboard() {
+  const stats = agentStats();
+  const el = document.getElementById('wrLbBody');
+  if (!stats.length) { el.innerHTML = ''; return; }
+  el.innerHTML = stats.map((a, i) => {
+    const [bg,fg] = PAL[i%PAL.length];
+    const sym = i===0?'🥇':i===1?'🥈':i===2?'🥉':i+1;
+    const rc  = i < 3 ? `r${i+1}` : '';
+    const sb  = a.bookRate>=50 ? '<span class="badge b-green">Strong</span>'
+              : a.bookRate>=25 ? '<span class="badge b-amber">Building</span>'
+              :                  '<span class="badge b-red">Low</span>';
+    return `<div class="lb-row ${rc}" style="animation-delay:${i*30}ms">
+      <div><div class="rank-badge">${sym}</div></div>
+      <div class="agent-cell">
+        <div class="avatar" style="background:${bg};color:${fg}">${ini(a.name)}</div>
+        <div><div class="agent-name">${a.name}</div><div class="agent-team">${a.team||'—'}</div></div>
+      </div>
+      <div class="meet-val">${a.meeting||0}</div>
+      <div class="cell-mono">${a.connected||0}</div>
+      <div class="cell-mono">${a.noanswer||0}</div>
+      <div class="cell-mono">${a.calls}</div>
+      <div><div class="bar-wrap"><div class="bar-lbl">${a.bookRate}%</div><div class="bar-bg"><div class="bar-fill" style="width:${Math.min(a.bookRate,100)}%"></div></div></div></div>
+      <div>${sb}</div>
+    </div>`;
+  }).join('');
+}
+
+// Auto-refresh every 90s when live
+setInterval(() => { if (S.calls.length && !S.mock) loadData(); }, 90000);
+
+loadData();
+</script>
+</body>
+</html>
